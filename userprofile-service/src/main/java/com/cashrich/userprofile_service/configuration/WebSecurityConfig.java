@@ -24,11 +24,17 @@ public class WebSecurityConfig {
         http
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
+                                .requestMatchers("/api/users/authenticate").permitAll()
                                 .anyRequest().permitAll()
                 )
                 .csrf(csrf ->
                         csrf.disable()
                 );
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class).build();
     }
 }

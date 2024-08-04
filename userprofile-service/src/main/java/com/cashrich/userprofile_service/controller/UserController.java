@@ -35,7 +35,7 @@ public class UserController {
     public ResponseEntity<String> authenticateUser(@RequestParam String username, @RequestParam String password) {
         boolean isAuthenticated = userService.authenticateUser(username, password);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("X-API-Origin", "YourAPIOrigin"); // Add your predefined header values here
+        headers.add("X-API-Origin", "YourAPIOrigin");
         if (isAuthenticated) {
             return new ResponseEntity<>("Authentication successful", headers, HttpStatus.OK);
         } else {
