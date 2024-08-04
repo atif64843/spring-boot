@@ -62,7 +62,11 @@ public class UserService {
         return mapToUserModel(userEntity);
     }
 
-    public String fetchCoinData(Long userId) {
+    public boolean authenticateUser(String username, String password) {
+        return userRepository.findByUsernameAndPassword(username, password).isPresent();
+    }
+
+    public String fetchCoinData(String userId) {
         return coinMarketCapService.fetchCoinData(userId);
     }
 

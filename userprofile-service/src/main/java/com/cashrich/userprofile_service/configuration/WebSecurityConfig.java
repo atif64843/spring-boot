@@ -13,6 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -23,27 +24,11 @@ public class WebSecurityConfig {
         http
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/users/register").permitAll() // Allow access to registration endpoint
-                                .requestMatchers("/api/users/**").authenticated() // Other endpoints require authentication
-                                .anyRequest().authenticated()
+                                .anyRequest().permitAll()
                 )
                 .csrf(csrf ->
-                        csrf
-                                .ignoringRequestMatchers("/api/users/register") // Disable CSRF for registration endpoint
-                )
-                .formLogin(formLogin ->
-                        formLogin
-                                .loginPage("/login")
-                                .permitAll()
-                )
-                .logout(logout ->
-                        logout.permitAll()
+                        csrf.disable()
                 );
         return http.build();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class).build();
     }
 }

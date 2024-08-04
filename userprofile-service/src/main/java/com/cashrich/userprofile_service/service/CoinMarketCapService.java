@@ -2,7 +2,7 @@ package com.cashrich.userprofile_service.service;
 
 import com.cashrich.userprofile_service.entity.ApiResponseEntity;
 import com.cashrich.userprofile_service.repository.ApiResponseRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -12,42 +12,52 @@ import java.time.LocalDateTime;
 @Service
 public class CoinMarketCapService {
 
+    @Value("${coinmarketcap.api.key}")
+    private String apiKey;
+
+    @Value("${coinmarketcap.api.url}")
+    private  String apiUrl;
+
     private final RestTemplate restTemplate;
+    private final ApiResponseRepository apiResponseRepository;
 
-    private  final ApiResponseRepository apiResponseRepository;
 
-    private static final String COINMARKETCAP_API_URL = "https://proapi.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=BTC,ETH,LTC";
-    private static final String API_KEY = "27ab17d1-215f-49e5-9ca4-afd48810c149";
 
-    @Autowired
-    public CoinMarketCapService(RestTemplate restTemplate, ApiResponseRepository apiResponseRepository) {
+    public CoinMarketCapService(RestTemplate restTemplate, ApiResponseRepository coinRepository) {
         this.restTemplate = restTemplate;
-        this.apiResponseRepository = apiResponseRepository;
+        this.apiResponseRepository = coinRepository;
     }
 
-    public String fetchCoinData(Long userId) {
+    public String fetchCoinData(String userId) {
+
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-CMC_PRO_API_KEY", API_KEY);
+        headers.set("X-CMC_PRO_API_KEY", apiKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
+        ResponseEntity<String> responseEntity;
         try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    COINMARKETCAP_API_URL,
-                    HttpMethod.GET,
-                    entity,
-                    String.class
-            );
-
-            ApiResponseEntity apiResponseEntity = new ApiResponseEntity();
-            apiResponseEntity.setUserId(userId);
-            apiResponseEntity.setResponse(response.getBody());
-            apiResponseEntity.setTimestamp(LocalDateTime.now());
-            apiResponseRepository.save(apiResponseEntity);
-
-            return response.getBody();
+            responseEntity = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch coin data from external API", e);
+
+            throw new RuntimeException("API call failed: " + e.getMessage());
         }
+
+        String response = responseEntity.getBody();
+
+        saveResponse(userId, apiUrl);
+
+        return response;
     }
+
+    private void saveResponse(String userId, String requestUrl) {
+        ApiResponseEntity log = new ApiResponseEntity();
+        log.setUserId(userId);
+        log.setResponse(requestUrl);
+        log.setTimestamp(LocalDateTime.now());
+        apiResponseRepository.save(log);
+    }
+
 }
 

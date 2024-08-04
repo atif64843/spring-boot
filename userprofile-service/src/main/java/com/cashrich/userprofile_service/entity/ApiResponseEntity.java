@@ -6,7 +6,6 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-
 @Entity
 @Setter
 @Getter
@@ -14,10 +13,10 @@ import java.time.LocalDateTime;
 public class ApiResponseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @Column(nullable = false)
-    private Long userId;
+    private String userId;
 
     @Column(columnDefinition = "TEXT")
     private String response;

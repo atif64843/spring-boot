@@ -5,6 +5,7 @@ import com.cashrich.userprofile_service.model.UserRequest;
 import com.cashrich.userprofile_service.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,18 @@ public class UserController {
         }
     }
 
+    @PostMapping("/authenticate")
+    public ResponseEntity<String> authenticateUser(@RequestParam String username, @RequestParam String password) {
+        boolean isAuthenticated = userService.authenticateUser(username, password);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-API-Origin", "YourAPIOrigin"); // Add your predefined header values here
+        if (isAuthenticated) {
+            return new ResponseEntity<>("Authentication successful", headers, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Authentication failed", headers, HttpStatus.UNAUTHORIZED);
+        }
+    }
+
     @PutMapping("/update/{id}")
     public ResponseEntity<UserRequest> updateUser(@PathVariable Long id, @Valid @RequestBody UserRequest updatedUser) {
         try {
@@ -50,13 +63,13 @@ public class UserController {
         }
     }
 
-    @GetMapping("/coin-data/{userId}")
-    public ResponseEntity<String> getCoinData(@PathVariable Long userId) {
+    @GetMapping("/coin-data")
+    public ResponseEntity<String> getCryptoData(@RequestParam String userId) {
         try {
-            String coinData = userService.fetchCoinData(userId);
-            return new ResponseEntity<>(coinData, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            String response = userService.fetchCoinData(userId);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>( e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
